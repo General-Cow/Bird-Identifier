@@ -1,3 +1,4 @@
+import json
 import torch
 from transformers import pipeline
 
@@ -10,6 +11,27 @@ class BirdVLM:
             model=self.model_name,
             device="cuda" if torch.cuda.is_available() else "cpu"
         )
+
+    @staticmethod
+    def _parse_model_json(payload):
+        if isinstance(payload, dict):
+            return payload
+
+        if not isinstance(payload, str):
+            raise TypeError(f"Expected JSON string or dict, got {type(payload).__name__}")
+
+        cleaned = payload.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.strip("`")
+            if cleaned.lower().startswith("json"):
+                cleaned = cleaned[4:].lstrip()
+
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            cleaned = cleaned[start:end + 1]
+
+        return json.loads(cleaned)
 
     def identify_bird(self, image, location, date, habitat):
         image.thumbnail((1280, 1280))
@@ -57,7 +79,8 @@ class BirdVLM:
         ]
 
         result = self.pipe(messages, max_new_tokens=512)
-        return result[0]["generated_text"][1]["content"]
+        generated = result[0]["generated_text"][1]["content"]
+        return self._parse_model_json(generated)
 
 # Subclasses for specific bird identification models. Need to be implemented for each model if they have different behavior or parameters.
 class QwenBirdVLM(BirdVLM):

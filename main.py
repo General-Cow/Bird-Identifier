@@ -7,13 +7,13 @@ def main():
     bird_identifier = BirdVLM()
 
     # Load an image (replace 'path_to_image.jpg' with your actual image path)
-    image_path = Path('path_to_image.jpg')
+    image_path = Path(r'data\IMG_1713.jpg')
     image = Image.open(image_path)
     
     # Define location, date, and habitat
     location = "Virginia, USA"
-    date = "11 May"
-    habitat = "On a lake boardwalk, surrounded by a forest."
+    date = "30 August"
+    habitat = "By the Potomac River in a forested area with a nearby marsh"
     
     # Identify the bird in the image
     result = bird_identifier.identify_bird(image, location, date, habitat)
