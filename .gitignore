@@ -3,6 +3,9 @@ __pycache__/
 .venv/
 .venv/*
 
+.archive/
+.archive/*
+
 data/*
 
 bird_identification_results.csv

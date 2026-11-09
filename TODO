@@ -1,0 +1,32 @@
+Step	Task	What you'll learn
+1	Create project structure	Python project organization
+2	Implement base.py	Interfaces and abstraction
+3	Implement vllm_backend.py	API communication
+4	Implement image_processing.py	Image handling
+5	Implement identification.py	Prompt construction and inference
+6	Implement output.py	Structured results and serialization
+7	Implement main.py	Application orchestration
+8	Test with bird photographs	End-to-end VLM inference
+
+
+
+Bird-Identifier/
+│
+├── app/
+│   ├── main.py
+│   ├── image_processing.py
+│   ├── identification.py
+│   └── output.py
+│
+├── inference/
+│   ├── base.py
+│   ├── transformers_backend.py
+│   └── vllm_backend.py
+│
+├── config/
+│   └── models.yaml
+│
+├── tests/
+│   └── test_vllm.py
+│
+└── requirements.txt
