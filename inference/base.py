@@ -1,3 +1,4 @@
+
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -8,6 +9,16 @@ class InferenceBackend(ABC):
 
     All inference backends should implement this interface
     so the application can use them interchangeably.
+
+    Image content uses the internal format:
+
+        {
+            "type": "image_path",
+            "path": "/path/to/image.jpg"
+        }
+
+    Each backend is responsible for translating this format
+    into whatever representation its inference engine requires.
     """
 
     @abstractmethod
@@ -22,7 +33,8 @@ class InferenceBackend(ABC):
         Generate a response from the model.
 
         Args:
-            messages: Conversation messages, including text and images.
+            messages: Conversation messages, including text and
+                      optional local image paths.
             max_tokens: Maximum number of tokens to generate.
             temperature: Controls generation randomness.
 

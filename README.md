@@ -1,35 +1,109 @@
-VLM-based tool for identifying birds species.
+# Bird Identifier
 
-Things to add:
-- Model selection
-- image processing with options
-- location and other data (time of year) info entry to aid in identification
-- cleaner output of results. Possibly a file with ref to image.
-- qualititive confidence from model?
-- Reasoning output?
-- may want different output types. such as a simple output that just states species and a longer output that adds reasoning.
-- consider output file type/types
-- dont forget to modify stuff like output limit and such
+A command-line tool that prepares a bird photograph, sends it to a locally
+hosted vision-language model for identification, displays the response, and
+saves the result and observation metadata as JSON.
 
-Notes
-- A test where I added a year to the model caused it to think a previous date was in the future presumably related to when it was trained. will likely want to drop year as itll just confuse the model and is somewhat irrelevant to identification.
-- An example with two Canada Geese returned a response recognizing there was more than one bird in the image. More testing on multiple types of birds is needed. Long term may want to incorporate logic or something to seperate the birds.
+## Repository layout
 
-Current example response
+```text
+app/
+  main.py                 CLI and end-to-end identification workflow
+  image_processing.py     Image validation, orientation, and resizing
+  identification.py       Prompt construction and identification requests
+  output.py               Terminal display and JSON result writing
+inference/
+  base.py                 Inference backend interface
+  vllm_backend.py         OpenAI-compatible vLLM client
+data/
+  input/                  Original photographs
+  processed/              Prepared JPEGs (generated)
+  results/                Identification JSON files (generated)
+tests/                    Unit and backend tests
+requirements.txt          Pinned Python dependencies
+```
 
-{
-    "species": "Great Blue Heron",
-    "scientific_name": "Ardea herodias",
-    "confidence": "high",
-    "reasoning": "The bird exhibits the characteristic long neck, legs, and sharp beak of a Great Blue Heron, commonly found in Virginia lakes during May. Its gray-blue plumage and posture are consistent with this species, which is a resident or migratory bird in the region during this time of year.",
-    "alternatives": [
-        {
-            "species": "Snowy Egret",
-            "reason": "Snowy Egrets are smaller, have white plumage, and typically have a more slender build; they are less likely to be seen in Virginia lakes in May without specific habitat context."
-        },
-        {
-            "species": "Green Heron",
-            "reason": "Green Herons are smaller and have a more compact body with a shorter neck; they are more common in marshy areas and may not be as frequently seen in open lake habitats."
-        }
-    ]
-}
+Generated files under `data/` are excluded from version control.
+
+## Requirements
+
+- Python 3.10 or later
+- A running [vLLM](https://docs.vllm.ai/) server with a vision-language model
+  that accepts image inputs through its OpenAI-compatible chat completions API
+- An environment compatible with the pinned vLLM, PyTorch, and CUDA dependencies
+  in `requirements.txt` (these dependencies are large and intended for supported
+  NVIDIA GPU environments)
+
+Create and activate a virtual environment, then install the project
+dependencies:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+## Start the inference server
+
+In a separate terminal, serve a vision-language model and give it the model name
+the application will request:
+
+```bash
+vllm serve <vision-language-model> \
+  --served-model-name bird-vl \
+  --host 127.0.0.1 \
+  --port 8000
+```
+
+Replace `<vision-language-model>` with a model supported by your installed vLLM
+version and hardware. Keep the server running while you use the CLI.
+
+## Identify a bird
+
+Place an image in `data/input/` (or provide any supported image path) and run:
+
+```bash
+python -m app.main --image data/input/IMG_0374.jpg
+```
+
+Optional observation context:
+
+```bash
+python -m app.main \
+  --image data/input/IMG_0374.jpg \
+  --location "Alexandria, Virginia" \
+  --date 2026-11-08
+```
+
+The CLI also supports inference and image-processing options:
+
+```text
+--model MODEL              vLLM served model name (default: bird-vl)
+--base-url URL             vLLM API URL (default: http://localhost:8000/v1)
+--max-tokens N             Maximum response length (default: 500)
+--temperature VALUE        Sampling temperature (default: 0.2)
+--max-dimension N          Maximum processed image width or height (default: 1280)
+--jpeg-quality N           Processed JPEG quality, 1-100 (default: 90)
+```
+
+Run `python -m app.main --help` for the complete argument list. Supported input
+image formats are JPEG, PNG, and WEBP. The original image is left unchanged;
+the application corrects EXIF orientation, resizes the image if necessary, and
+writes a JPEG copy to `data/processed/`.
+
+The model response is printed in the terminal and saved to a uniquely named JSON
+file in `data/results/`. Each result includes the response, model name,
+observation context, creation time, and paths to the original and processed
+images. Identification content is generated by the model and should be
+independently verified.
+
+## Tests
+
+Run the test suite with:
+
+```bash
+python -m unittest discover -s tests
+```
+
+Backend tests that make live requests to vLLM require a running compatible
+server; local image-processing and output tests do not.

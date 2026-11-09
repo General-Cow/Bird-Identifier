@@ -1,111 +1,85 @@
 
-import base64
-from io import BytesIO
 from pathlib import Path
 
-from PIL import Image
-
+from app.image_processing import ImageProcessor
+from app.identification import BirdIdentifier
+from app.output import ResultWriter
 from inference.vllm_backend import VLLMBackend
 
 
-def encode_image(
-    image_path: Path,
-    max_dimension: int = 1280,
-) -> tuple[str, tuple[int, int]]:
-    """Resize an image and return its Base64 encoding and dimensions."""
-
-    with Image.open(image_path) as image:
-        image.thumbnail(
-            (max_dimension, max_dimension),
-            Image.Resampling.LANCZOS,
-        )
-
-        image = image.convert("RGB")
-        dimensions = image.size
-
-        buffer = BytesIO()
-        image.save(buffer, format="JPEG", quality=90)
-
-        encoded = base64.b64encode(
-            buffer.getvalue()
-        ).decode("utf-8")
-
-    return encoded, dimensions
-
-
 def main():
-
+    # Define project paths
     project_root = Path(__file__).resolve().parents[1]
-
-    image_path = (
-        project_root
-        / "data"
-        / "processed"
-        / "IMG_0374_processed.jpg"
-    )
-
-    if not image_path.is_file():
-        raise FileNotFoundError(f"Image not found: {image_path}")
+    original_image = project_root / "data" / "input" / "IMG_0374.jpg"
+    processed_dir = project_root / "data" / "processed"
+    results_dir = project_root / "data" / "results"
 
     print("\n" + "=" * 60)
-    print("VLLM VISION BACKEND TEST")
+    print("BIRD IDENTIFICATION PIPELINE")
     print("=" * 60)
 
-    print(f"Image: {image_path.name}")
+    # Step 1: Process image
+    print("\n[1/4] Processing image...")
 
-    # Initialize inference backend.
+    processor = ImageProcessor(
+        max_dimension=1280,
+        jpeg_quality=90,
+    )
+
+    processed_image = processor.process(
+        image_path=original_image,
+        output_dir=processed_dir,
+    )
+
+    print(f"Original image:  {processed_image.original_path}")
+    print(f"Original size:   {processed_image.original_size}")
+    print(f"Processed image: {processed_image.processed_path}")
+    print(f"Processed size:  {processed_image.processed_size}")
+
+    # Step 2: Set observation information
+    location = None
+    observation_date = None
+
+    # Step 3: Run bird identification
+    print("\n[2/4] Identifying bird...")
+
     backend = VLLMBackend(
         model_name="bird-vl",
         base_url="http://localhost:8000/v1",
     )
 
-    # Resize and encode image for inference.
-    encoded_image, dimensions = encode_image(image_path)
+    identifier = BirdIdentifier(backend=backend)
 
-    print(f"Image dimensions sent: {dimensions}")
-
-    # Construct multimodal request.
-    messages = [
-        {
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": (
-                        "Identify the bird in this photograph. "
-                        "Provide the most likely species, "
-                        "the visual evidence supporting your identification, "
-                        "and a qualitative confidence level."
-                    ),
-                },
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": (
-                            f"data:image/jpeg;base64,{encoded_image}"
-                        )
-                    },
-                },
-            ],
-        }
-    ]
-
-    print("\nSending image to vLLM...")
-
-    result = backend.generate(
-        messages=messages,
-        max_tokens=400,
+    result = identifier.identify(
+        image_path=processed_image.processed_path,
+        location=location,
+        observation_date=observation_date,
+        max_tokens=500,
         temperature=0.2,
     )
 
-    print("\n" + "=" * 60)
-    print("MODEL RESPONSE")
-    print("=" * 60)
+    # Step 4: Display and save result
+    print("\n[3/4] Displaying result...")
 
-    print(result)
+    writer = ResultWriter()
+    writer.display(result)
+
+    print("[4/4] Saving result...")
+
+    saved_path = writer.save_json(
+        response=result,
+        original_image=processed_image.original_path,
+        processed_image=processed_image.processed_path,
+        model_name="bird-vl",
+        output_dir=results_dir,
+        location=location,
+        observation_date=observation_date,
+    )
+
+    print(f"\nResult saved to: {saved_path}")
 
     print("\n" + "=" * 60)
-    print("TEST COMPLETE")
+    print("PIPELINE COMPLETE")
     print("=" * 60)
 
 
