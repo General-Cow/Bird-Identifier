@@ -1,14 +1,51 @@
-Step	Task	What you'll learn
-1	Create project structure	Python project organization
-2	Implement base.py	Interfaces and abstraction
-3	Implement vllm_backend.py	API communication
-4	Implement image_processing.py	Image handling
-5	Implement identification.py	Prompt construction and inference
-6	Implement output.py	Structured results and serialization
-7	Implement main.py	Application orchestration
-8	Test with bird photographs	End-to-end VLM inference
+Phase 1 – Working application 
 
+[X] Done
 
+Phase 2 – Structured identification
+
+[] Have the model return predictable, structured data rather than an unstructured paragraph.
+[] Common and scientific names
+[] Qualitative confidence
+[] Visual evidence
+[] Alternative species
+[] Identification limitations
+[] Python JSON parsing and validation
+
+Phase 3 – Observation metadata
+
+Location, date, and time
+Habitat and environmental context
+User-provided notes
+Distinguish visual evidence from contextual evidence
+
+Phase 4 – Image processing improvements
+
+Cropping and resizing strategies
+Resolution versus visual-token tradeoffs
+Image enhancement options
+Potential bird detection and cropping
+
+Phase 5 – Model experimentation
+
+Multiple VLM backends
+Compare model identifications
+Evaluate accuracy and consistency
+Develop a test dataset
+
+Phase 6 – Advanced identification
+
+Combine VLMs with specialized bird classifiers
+Explore geographic species filtering
+Improve uncertainty estimation
+Potentially use external bird occurrence data
+
+Phase 7 – Application interface
+
+Desktop or web interface
+Phone-based image submission
+Desktop inference server
+Private network access
 
 Bird-Identifier/
 │

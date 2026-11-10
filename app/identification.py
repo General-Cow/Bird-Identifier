@@ -27,35 +27,93 @@ class BirdIdentifier:
     ) -> str:
         """Construct the bird identification prompt."""
 
+#         prompt = """
+# Identify the bird shown in the photograph.
+
+# Analyze the visible characteristics carefully, including:
+
+# - Plumage colors and patterns
+# - Head markings
+# - Beak shape and size
+# - Body shape and proportions
+# - Wing and tail characteristics
+# - Distinguishing field marks
+
+# Provide your identification using the following sections:
+
+# 1. Most likely species, including its scientific name.
+# 2. Visual evidence supporting the identification.
+# 3. Other plausible species, if there is meaningful ambiguity.
+# 4. Qualitative confidence level: High, Medium, or Low.
+
+# Important guidelines:
+
+# - Do not invent field marks that are not visible.
+# - Distinguish observed characteristics from assumptions.
+# - Do not give a numerical confidence percentage.
+# - If the photograph does not support identification to
+#   species level, state that explicitly.
+# - Consider similar-looking species before settling
+#   on an identification.
+# """
+
         prompt = """
-Identify the bird shown in the photograph.
+Identify the bird in the provided photograph.
 
-Analyze the visible characteristics carefully, including:
-
+Examine visible characteristics:
 - Plumage colors and patterns
 - Head markings
 - Beak shape and size
-- Body shape and proportions
+- Body proportions
 - Wing and tail characteristics
 - Distinguishing field marks
 
-Provide your identification using the following sections:
+Identification guidelines:
+- Only report characteristics clearly visible in the image.
+- Do not invent or infer unobservable field marks.
+- Consider plausible lookalike species before selecting
+  the leading candidate.
+- Include only genuinely plausible alternatives.
+- Explain which visible characteristics support or
+  distinguish each candidate.
+- Do not use speculative or non-diagnostic characteristics
+  to justify an identification.
+- If distinguishing features cannot be assessed, acknowledge
+  uncertainty rather than favoring a species without evidence.
+- Consider geographic and seasonal plausibility when
+  observation information is provided.
+- Always provide the best plausible candidate when one
+  exists, even with low confidence. Use null only when no
+  meaningful candidate can be suggested.
+- Confidence must be exactly "high", "medium", or "low".
+- Do not assign high confidence when important distinguishing
+  characteristics cannot be assessed.
 
-1. Most likely species, including its scientific name.
-2. Visual evidence supporting the identification.
-3. Other plausible species, if there is meaningful ambiguity.
-4. Qualitative confidence level: High, Medium, or Low.
+Return valid JSON only. No Markdown or additional text.
+Include every field and use empty arrays when no entries exist.
 
-Important guidelines:
+Required JSON structure:
 
-- Do not invent field marks that are not visible.
-- Distinguish observed characteristics from assumptions.
-- Do not give a numerical confidence percentage.
-- If the photograph does not support identification to
-  species level, state that explicitly.
-- Consider similar-looking species before settling
-  on an identification.
-"""
+{
+    "species": {
+        "common_name": "Common name",
+        "scientific_name": "Scientific name"
+    },
+    "confidence": "high/medium/low",
+    "visual_evidence": [],
+    "alternative_species": [
+        {
+            "common_name": "Common name",
+            "scientific_name": "Scientific name",
+            "reason": "Explanation"
+        }
+    ],
+    "limitations": []
+}
+
+The species field may also be null if no meaningful
+candidate can be suggested.
+ """
 
         if location:
             prompt += (
