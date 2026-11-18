@@ -4,12 +4,12 @@ Phase 1 – Working application
 
 Phase 2 – Structured identification
 
-[] Have the model return predictable, structured data rather than an unstructured paragraph.
-[] Common and scientific names
-[] Qualitative confidence
-[] Visual evidence
-[] Alternative species
-[] Identification limitations
+[x] Have the model return predictable, structured data rather than an unstructured paragraph.
+[x] Common and scientific names
+[x] Qualitative confidence
+[x] Visual evidence
+[x] Alternative species
+[x] Identification limitations
 [] Python JSON parsing and validation
 
 Phase 3 – Observation metadata
