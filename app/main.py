@@ -5,6 +5,7 @@ from pathlib import Path
 from app.image_processing import ImageProcessor
 from app.identification import BirdIdentifier
 from app.output import ResultWriter
+from app.validation import IdentificationResult, validate_semantics, parse_json
 from inference.vllm_backend import VLLMBackend
 
 
@@ -135,15 +136,19 @@ def main():
         temperature=args.temperature,
     )
 
+    json_result = parse_json(result)
+    identification_result = IdentificationResult.model_validate(json_result)  # Validate structure with Pydantic
+    validate_semantics(identification_result)
+
     # Step 4: Display and save result
     print("\n[4/4] Saving results...")
 
     writer = ResultWriter()
 
-    writer.display(result)
+    writer.display(identification_result)
 
     saved_path = writer.save_json(
-        response=result,
+        identification_result=identification_result,
         original_image=processed_image.original_path,
         processed_image=processed_image.processed_path,
         model_name=args.model,

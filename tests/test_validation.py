@@ -1,4 +1,4 @@
-from app.validation import IdentificationResult
+from app.validation import IdentificationResult, validate_semantics
 import unittest
 from pydantic import ValidationError
 
@@ -170,6 +170,125 @@ class TestIdentificationResult(unittest.TestCase):
         self.assertEqual(result.visual_evidence, [])
         self.assertEqual(result.alternative_species, [])
         self.assertEqual(result.limitations, [])
+
+
+    def test_high_confidence_without_evidence(self):
+        data = {
+            "species": {
+                "common_name": "Barn Swallow",
+                "scientific_name": "Hirundo rustica"
+            },
+            "confidence": "high",
+            "visual_evidence": [],
+            "alternative_species": [],
+            "limitations": []
+        }
+
+        result = IdentificationResult.model_validate(data)
+
+        with self.assertRaises(ValueError) as context:
+            validate_semantics(result)
+
+        self.assertEqual(str(context.exception), "High confidence results must have visual evidence.")
+
+
+    def test_high_confidence_with_evidence(self):
+        data = {
+            "species": {
+                "common_name": "Barn Swallow",
+                "scientific_name": "Hirundo rustica"
+            },
+            "confidence": "high",
+            "visual_evidence": ["Dark blue-black upper body"],
+            "alternative_species": [],
+            "limitations": []
+        }
+
+        result = IdentificationResult.model_validate(data)
+
+        # This should not raise an exception
+        validate_semantics(result)
+
+
+    def test_no_species_high_confidence(self):
+        data = {
+            "species": None,
+            "confidence": "high",
+            "visual_evidence": ["Dark blue-black upper body"],
+            "alternative_species": [],
+            "limitations": []
+        }
+
+        result = IdentificationResult.model_validate(data)
+
+        with self.assertRaises(ValueError) as context:
+            validate_semantics(result)
+
+        self.assertEqual(str(context.exception), "High confidence results must have a species identified.")
+
+
+    def test_no_species_low_confidence(self):
+        data = {
+            "species": None,
+            "confidence": "low",
+            "visual_evidence": [],
+            "alternative_species": [],
+            "limitations": []
+        }
+
+        result = IdentificationResult.model_validate(data)
+
+        # This should not raise an exception
+        validate_semantics(result)
+
+    def test_alternative_species_same_as_identified(self):
+        data = {
+            "species": {
+                "common_name": "Barn Swallow",
+                "scientific_name": "Hirundo rustica"
+            },
+            "confidence": "medium",
+            "visual_evidence": ["Dark blue-black upper body"],
+            "alternative_species": [
+                {
+                    "common_name": "Barn Swallow",
+                    "scientific_name": "Hirundo rustica",  # Same as identified species
+                    "reason": "Similar appearance"
+                }
+            ],
+            "limitations": []
+        }
+
+        result = IdentificationResult.model_validate(data)
+
+        with self.assertRaises(ValueError) as context:
+            validate_semantics(result)
+
+        self.assertEqual(str(context.exception), "Alternative species cannot have the same scientific name as the identified species.")
+
+
+    def test_alternative_species_different_from_identified(self):
+        data = {
+            "species": {
+                "common_name": "Barn Swallow",
+                "scientific_name": "Hirundo rustica"
+            },
+            "confidence": "medium",
+            "visual_evidence": ["Dark blue-black upper body"],
+            "alternative_species": [
+                {
+                    "common_name": "Cliff Swallow",
+                    "scientific_name": "Petrochelidon pyrrhonota",  # Different from identified species
+                    "reason": "Similar appearance"
+                }
+            ],
+            "limitations": []
+        }
+
+        result = IdentificationResult.model_validate(data)
+
+        # This should not raise an exception
+        validate_semantics(result)
 
 
 if __name__ == "__main__":

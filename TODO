@@ -10,7 +10,8 @@ Phase 2 – Structured identification
 [x] Visual evidence
 [x] Alternative species
 [x] Identification limitations
-[] Python JSON parsing and validation
+[X] Python JSON parsing and validation
+[] error handling and response robustness
 
 Phase 3 – Observation metadata
 

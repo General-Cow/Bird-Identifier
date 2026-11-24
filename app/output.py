@@ -1,8 +1,7 @@
-
 import json
 from datetime import datetime
 from pathlib import Path
-
+from app.validation import IdentificationResult
 
 class ResultWriter:
     """
@@ -13,18 +12,18 @@ class ResultWriter:
     the model's identification.
     """
 
-    def display(self, response: str) -> None:
-        """Print the model's response in a readable terminal format."""
+    def display(self, identification_result: IdentificationResult) -> None:
+        """Print the identification result in a readable terminal format."""
         print("\n" + "=" * 60)
         print("BIRD IDENTIFICATION RESULT")
         print("=" * 60)
-        print(response)
+        print(json.dumps(identification_result.model_dump(), indent=4, ensure_ascii=False))
         print("=" * 60 + "\n")
 
     def save_json(
         self,
         *,
-        response: str,
+        identification_result: IdentificationResult,
         original_image: str | Path,
         processed_image: str | Path,
         model_name: str,
@@ -50,7 +49,7 @@ class ResultWriter:
             "observation_date": observation_date,
             "model": model_name,
             "identification": {
-                "response": response
+                "response": identification_result.model_dump(mode="json")
             },
         }
 

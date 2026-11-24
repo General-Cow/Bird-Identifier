@@ -2,6 +2,7 @@ import json
 from pydantic import BaseModel, ValidationError
 from typing import Literal
 
+
 def parse_json(json_string):
     """
     Parses a JSON string into a Python object.
@@ -46,19 +47,13 @@ class IdentificationResult(BaseModel):
     limitations: list[str]
 
 
-# def validate_json(json_string):
-#     """
-#     Validates if the provided string is a valid JSON.
-
-#     Args:
-#         json_string (str): The JSON string to validate.
-
-#     Returns:
-#         bool: True if the string is valid JSON, False otherwise.
-
-#     """
-#     try:
-#         json.loads(str(json_string))
-#         return True
-#     except ValueError:
-#         return False
+def validate_semantics(result: IdentificationResult):
+    """Validates the semantics of the identification result."""
+    if not result.visual_evidence and result.confidence == "high":
+        raise ValueError("High confidence results must have visual evidence.")
+    if result.species is None and result.confidence == "high":
+        raise ValueError("High confidence results must have a species identified.")
+    if result.species is not None:
+        for alt_species in result.alternative_species:
+            if alt_species.scientific_name == result.species.scientific_name:
+                raise ValueError("Alternative species cannot have the same scientific name as the identified species.")
