@@ -1,6 +1,9 @@
 
 import argparse
 from pathlib import Path
+import sys
+import json
+from pydantic import ValidationError
 
 from app.image_processing import ImageProcessor
 from app.identification import BirdIdentifier
@@ -136,9 +139,28 @@ def main():
         temperature=args.temperature,
     )
 
-    json_result = parse_json(result)
-    identification_result = IdentificationResult.model_validate(json_result)  # Validate structure with Pydantic
-    validate_semantics(identification_result)
+    # Error handling and response robustness
+    try:
+        json_result = parse_json(result)    
+    except ValueError as e:
+        print(f"Error parsing JSON: {e}")
+        print("Raw result:", result)
+        sys.exit(1)
+
+    try:
+        identification_result = IdentificationResult.model_validate(json_result)  # Validate structure with Pydantic
+    except ValidationError as e:
+        print(f"Validation error:\n{e}")
+        print("Raw result:", result)
+        sys.exit(1)
+
+    try:
+        validate_semantics(identification_result)
+    except ValueError as e:
+        print(f"Semantic validation error: {e}")
+        print("Raw result:", identification_result)
+        sys.exit(1)
+
 
     # Step 4: Display and save result
     print("\n[4/4] Saving results...")

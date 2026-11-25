@@ -11,37 +11,41 @@ Phase 2 – Structured identification
 [x] Alternative species
 [x] Identification limitations
 [X] Python JSON parsing and validation
-[] error handling and response robustness
+[X] error handling and response robustness
 
-Phase 3 – Observation metadata
+Phase 3 – Evaluation Framework
+
+Steps TBD
+
+Phase 4 – Observation metadata
 
 Location, date, and time
 Habitat and environmental context
 User-provided notes
 Distinguish visual evidence from contextual evidence
 
-Phase 4 – Image processing improvements
+Phase 5 – Image processing improvements
 
 Cropping and resizing strategies
 Resolution versus visual-token tradeoffs
 Image enhancement options
 Potential bird detection and cropping
 
-Phase 5 – Model experimentation
+Phase 6 – Model experimentation
 
 Multiple VLM backends
 Compare model identifications
 Evaluate accuracy and consistency
 Develop a test dataset
 
-Phase 6 – Advanced identification
+Phase 7 – Advanced identification
 
 Combine VLMs with specialized bird classifiers
 Explore geographic species filtering
 Improve uncertainty estimation
 Potentially use external bird occurrence data
 
-Phase 7 – Application interface
+Phase 8 – Application interface
 
 Desktop or web interface
 Phone-based image submission
