@@ -51,24 +51,3 @@ Desktop or web interface
 Phone-based image submission
 Desktop inference server
 Private network access
-
-Bird-Identifier/
-│
-├── app/
-│   ├── main.py
-│   ├── image_processing.py
-│   ├── identification.py
-│   └── output.py
-│
-├── inference/
-│   ├── base.py
-│   ├── transformers_backend.py
-│   └── vllm_backend.py
-│
-├── config/
-│   └── models.yaml
-│
-├── tests/
-│   └── test_vllm.py
-│
-└── requirements.txt
